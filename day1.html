@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 1: Foundations of Agentic AI (Extended)</title>
+  <style>
+    /* --- PROFESSIONAL THEME: Slate & Teal --- */
+    :root {
+      --bg-body: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-primary: #0f172a;
+      /* Slate 900 */
+      --text-secondary: #475569;
+      /* Slate 600 */
+      --accent: #0f766e;
+      /* Teal 700 */
+      --accent-light: #ccfbf1;
+      /* Teal 100 */
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --font-stack: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --console-bg: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      outline: none;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- ICONS (SVG HELPER) --- */
+    .icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      stroke-width: 2;
+      fill: none;
+      stroke: currentColor;
+      margin-right: 8px;
+    }
+
+    .icon-lg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      stroke: var(--accent);
+      fill: #ffffff;
+      stroke-width: 1.5;
+    }
+
+    /* --- LAYOUT --- */
+    .slide-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 20px 100px 20px;
+      /* Bottom padding for nav */
+      scroll-behavior: smooth;
+    }
+
+    .slide {
+      display: none;
+      max-width: 1000px;
+      /* Wider for deep content */
+      margin: 0 auto;
+      animation: fadeUp 0.5s ease-out forwards;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- TYPOGRAPHY --- */
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 1.2rem;
+    }
+
+    strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    ul {
+      margin-left: 20px;
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+
+    /* --- CARDS & SURFACES --- */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 24px;
+    }
+
+    .card-highlight {
+      border-left: 5px solid var(--accent);
+    }
+
+    .card-warning {
+      border-left: 5px solid var(--warning);
+      background: #fffbeb;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    /* --- INTERACTIVE ELEMENTS --- */
+    .btn {
+      background: var(--text-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-body);
+    }
+
+    /* Toggle Switch Styles */
+    .toggle-container {
+      display: flex;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 8px;
+      width: fit-content;
+      margin: 0 auto 30px auto;
+    }
+
+    .toggle-btn {
+      padding: 10px 30px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: 0.3s;
+    }
+
+    .toggle-btn.active {
+      background: white;
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Interactive Comparison Box */
+    .comparison-box {
+      min-height: 240px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .comp-content {
+      flex: 1;
+      padding: 40px;
+      display: none;
+    }
+
+    .comp-content.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    /* Interactive Anatomy Map */
+    .anatomy-map {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .anatomy-item {
+      flex: 1;
+      min-width: 180px;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      position: relative;
+    }
+
+    .anatomy-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .anatomy-item.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .anatomy-desc {
+      margin-top: 20px;
+      padding: 30px;
+      background: white;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      display: none;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* BUILDER STYLES */
+    .builder-container {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 24px;
+    }
+
+    .config-panel h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tool-option {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      transition: 0.2s;
+      background: white;
+    }
+
+    .tool-option:hover {
+      border-color: var(--accent);
+    }
+
+    .tool-option input {
+      accent-color: var(--accent);
+      transform: scale(1.2);
+    }
+
+    .console-output {
+      background: var(--console-bg);
+      color: #22d3ee;
+      font-family: 'Courier New', monospace;
+      padding: 25px;
+      border-radius: 8px;
+      height: 400px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      border: 1px solid #334155;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .log-line {
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: typeIn 0.2s forwards;
+    }
+
+    .log-thought {
+      color: #94a3b8;
+      font-style: italic;
+      border-left: 2px solid #475569;
+      padding-left: 10px;
+    }
+
+    .log-action {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .log-result {
+      color: #4ade80;
+    }
+
+    .log-error {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+      padding: 5px;
+    }
+
+    @keyframes typeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Status Tags */
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .tag-blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .tag-teal {
+      background: #ccfbf1;
+      color: #0f766e;
+    }
+
+    .tag-purple {
+      background: #f3e8ff;
+      color: #6b21a8;
+    }
+
+    /* Process Steps */
+    .step-list {
+      counter-reset: step;
+    }
+
+    .step-item {
+      position: relative;
+      padding-left: 50px;
+      margin-bottom: 20px;
+    }
+
+    .step-item::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 35px;
+      height: 35px;
+      background: var(--text-primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* Use Case List */
+    .use-case-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      transition: 0.2s;
+    }
+
+    .use-case-item:hover {
+      background: #f8fafc;
+    }
+
+    .use-case-item:last-child {
+      border-bottom: none;
+    }
+
+    .circle-num {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+
+    /* Navigation Footer */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      height: 80px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 40px;
+      z-index: 10;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="slide-container">
+
+    <section class="slide active">
+      <div style="margin-top: 40px; text-align: center;">
+        <span class="tag tag-teal">Day 1: Foundations</span>
+        <h1>Agentic AI Systems Engineering</h1>
+        <p style="font-size: 1.4rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 40px auto;">
+          An advanced course on designing autonomous workflows, memory systems, and role-driven intelligence.
+        </p>
+
+        <div class="grid-2" style="text-align: left;">
+          <div class="card card-highlight">
+            <svg class="icon-lg" viewBox="0 0 24 24">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <h3>System Architecture</h3>
+            <p>We are shifting from "Chatting with AI" to "Engineering Systems." You will learn to build agents that act
+              as interns, researchers, and analysts.</p>
+          </div>
+          <div class="card">
+            <svg class="icon-lg" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <h3>The 2-Week Mission</h3>
+            <p>This is not theory. By Day 13, you will have a deployed platform capable of Research Automation, Grading,
+              and Data Analysis.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg> The Paradigm Shift</h2>
+      <p>Why do standard LLMs fail at complex tasks? They lack <strong>agency</strong> (the ability to act on the
+        world).</p>
+
+      <div class="toggle-container">
+        <div class="toggle-btn active" onclick="setMode('standard')">Standard AI (ChatGPT)</div>
+        <div class="toggle-btn" onclick="setMode('agentic')">Agentic AI (The Goal)</div>
+      </div>
+
+      <div class="comparison-box">
+        <div id="standard" class="comp-content active">
+          <span class="tag tag-blue">Passive Tool</span>
+          <h3>Input-Output Engine</h3>
+          <p><strong>Scenario:</strong> You ask for a Literature Review.</p>
+          <ul style="margin-top: 20px;">
+            <li>⚠️ <strong>Stateless:</strong> If you close the tab, it forgets the context.</li>
+            <li>⚠️ <strong>Frozen Knowledge:</strong> Relies only on training data (often outdated).</li>
+            <li>⚠️ <strong>Passive:</strong> It cannot browse the web or run code unless explicitly triggered.</li>
+            <li>⚠️ <strong>One-Shot:</strong> It tries to solve everything in one response, leading to hallucinations.
+            </li>
+          </ul>
+          <div
+            style="background: #f1f5f9; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; margin-top: 20px;">
+            User: "Find papers on X."<br>
+            AI: "Here is a list based on my training data up to 2023..." (Likely hallucinated)
+          </div>
+        </div>
+
+        <div id="agentic" class="comp-content">
+          <span class="tag tag-teal">Autonomous System</span>
+          <h3>Goal-Driven Worker</h3>
+          <p><strong>Scenario:</strong> You ask for a Literature Review.</p>
+          <ul style="margin-top: 20px;">
+            <li>✅ <strong>Plan-Driven:</strong> "I need to search Google Scholar, then read PDF, then summarize."</li>
+            <li>✅ <strong>Tool-Equipped:</strong> It has "hands" (Web Search API, Python, File System).</li>
+            <li>✅ <strong>Self-Correcting:</strong> "The search returned 0 results. I will try a synonym."</li>
+            <li>✅ <strong>Multi-Step:</strong> It runs in a loop until the criteria are met.</li>
+          </ul>
+          <div
+            style="background: #ecfdf5; color: #064e3b; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; margin-top: 20px;">
+            Agent: "Searching... Found 0 results. Retrying with synonym... Found 5 PDFs. Summarizing..."
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+          </path>
+        </svg> Deep Dive: The Agent Loop</h2>
+      <p>How does an agent actually "think"? It is a continuous loop of <strong>Observation, Thought, and
+          Action</strong>.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>The ReAct Pattern</h3>
+          <p>Most modern agents follow the <strong>ReAct</strong> (Reason + Act) architecture:</p>
+          <div class="step-list">
+            <div class="step-item">
+              <strong>Input:</strong> The agent receives a high-level goal.
+            </div>
+            <div class="step-item">
+              <strong>Thought:</strong> The LLM generates an internal monologue explaining what to do next.
+            </div>
+            <div class="step-item">
+              <strong>Action:</strong> The agent generates a structured command (JSON) to call a tool.
+            </div>
+            <div class="step-item">
+              <strong>Observation:</strong> The tool executes (e.g., Python runs) and returns output to the agent.
+            </div>
+          </div>
+        </div>
+        <div class="card" style="background: #1e293b; color: white;">
+          <h3 style="color:white;">Under the Hood</h3>
+          <pre style="font-family: monospace; font-size: 0.85rem; color: #cbd5e1; overflow-x: auto;">
+while (goal_not_met):
+  
+  # 1. Ask Brain
+  response = LLM(context + history)
+  
+  # 2. Parse Decision
+  if "Tool_Call" in response:
+      tool_name = response.tool
+      tool_args = response.args
+      
+      # 3. Execute Tool
+      result = execute(tool_name, tool_args)
+      
+      # 4. Update Memory
+      history.append(result)
+  
+  else:
+      return response.final_answer
+        </pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+          </path>
+        </svg> Deep Dive: Tools & Function Calling</h2>
+      <p>How does a text model use a calculator? Through <strong>Function Calling</strong>.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>The API Contract</h3>
+          <p>The LLM cannot "click" buttons. Instead, we give it a menu of functions it can "call" by writing specific
+            text.</p>
+          <br>
+          <strong>Example Tools we will build:</strong>
+          <ul style="margin-top: 10px;">
+            <li><code>search_web(query: str)</code></li>
+            <li><code>read_pdf(filepath: str)</code></li>
+            <li><code>run_python(code: str)</code></li>
+            <li><code>send_email(to: str, body: str)</code></li>
+          </ul>
+        </div>
+        <div class="card card-warning">
+          <h3>Common Pitfall</h3>
+          <p><strong>Hallucinated Arguments:</strong><br> Sometimes an agent tries to call a tool that doesn't exist, or
+            invents arguments.</p>
+          <p style="margin-top: 10px;"><em>Example:</em> Calling <code>search_web(query="AI", date="tomorrow")</code>
+            when the tool doesn't support a date filter.</p>
+          <p><strong>Solution:</strong> Strict Schema Definition (JSON Schema) is required to constrain the agent.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg> Deep Dive: Memory & Context</h2>
+      <p>Agents need memory to maintain continuity over days or weeks.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag tag-purple">Short-Term</span>
+          <h3>The Context Window</h3>
+          <p>This is the "Working Memory." It contains the current chat history. It is fast but limited (e.g., 8k - 128k
+            tokens).</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-teal">Long-Term (RAG)</span>
+          <h3>Vector Database</h3>
+          <p>We convert documents into numbers (embeddings) and store them. The agent "searches" this DB to recall facts
+            from months ago.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-blue">Stateful</span>
+          <h3>Checkpointing</h3>
+          <p>If an agent crashes, it needs to resume exactly where it left off. We save the "State" (current step,
+            variables) to a database.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg> Interactive Anatomy</h2>
+      <p>Bringing it all together. Click to review the 4 Pillars of Agentic AI.</p>
+
+      <div class="anatomy-map">
+        <div class="anatomy-item" onclick="showPart('brain', this)">
+          <div style="font-weight: 700; color: var(--text-primary);">The Brain (LLM)</div>
+          <p style="font-size: 0.85rem; margin-top: 5px;">Reasoning Engine</p>
+        </div>
+        <div class="anatomy-item" onclick="showPart('tools', this)">
+          <div style="font-weight: 700; color: var(--text-primary);">Tools</div>
+          <p style="font-size: 0.85rem; margin-top: 5px;">Action Interfaces</p>
+        </div>
+        <div class="anatomy-item" onclick="showPart('planning', this)">
+          <div style="font-weight: 700; color: var(--text-primary);">Planning</div>
+          <p style="font-size: 0.85rem; margin-top: 5px;">Workflows & Retries</p>
+        </div>
+        <div class="anatomy-item" onclick="showPart('memory', this)">
+          <div style="font-weight: 700; color: var(--text-primary);">Memory</div>
+          <p style="font-size: 0.85rem; margin-top: 5px;">State & Context</p>
+        </div>
+      </div>
+
+      <div id="desc-box" class="anatomy-desc" style="display: block;">
+        <h3 id="part-title">Select a Component</h3>
+        <p id="part-text">Click on the cards above to see how these components interact in the system you will build.
+        </p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg> Live Simulator</h2>
+      <p>Configure an agent and watch the <strong>Thought -> Plan -> Action</strong> loop in real-time.</p>
+
+      <div class="card builder-container">
+        <div class="config-panel">
+          <h3>1. Select Role</h3>
+          <select id="agent-role" class="input-select">
+            <option value="research">Research Assistant (Task Agent)</option>
+            <option value="data">Data Analyst (Tool Agent)</option>
+            <option value="tutor">Course Tutor (Reasoning Agent)</option>
+          </select>
+
+          <h3>2. Equip Tools</h3>
+          <div class="tool-grid">
+            <label class="tool-option"><input type="checkbox" id="tool-search" value="search"> Web Search</label>
+            <label class="tool-option"><input type="checkbox" id="tool-calc" value="calc"> Calculator</label>
+            <label class="tool-option"><input type="checkbox" id="tool-db" value="db"> Database</label>
+            <label class="tool-option"><input type="checkbox" id="tool-python" value="python"> Python REPL</label>
+          </div>
+
+          <button class="btn" onclick="runSimulation()">
+            <svg class="icon" viewBox="0 0 24 24" style="width:18px;">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Deploy & Run
+          </button>
+        </div>
+
+        <div class="console-output" id="agent-console">
+          <div class="log-line">> System initialized.</div>
+          <div class="log-line">> Awaiting configuration to start lifecycle...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg> Real-World Case Study</h2>
+      <p><strong>The "Thesis Validator" Agent.</strong> This is Use Case #3 in our syllabus.</p>
+
+      <div class="card">
+        <h3>The Challenge</h3>
+        <p>A professor needs to check if a student's thesis topic is actually novel or if it has been done before.</p>
+
+        <h3>The Agent Workflow</h3>
+        <div class="step-list" style="margin-top: 20px;">
+          <div class="step-item">
+            <strong>Perception:</strong> Agent reads the PDF uploaded by the student.
+          </div>
+          <div class="step-item">
+            <strong>Extraction:</strong> Agent uses an LLM to extract the "Core Hypothesis" (e.g., "AI improves farming
+            yield by 20%").
+          </div>
+          <div class="step-item">
+            <strong>Investigation (Loop):</strong>
+            <br> - Tool: Search Google Scholar for "AI farming yield".
+            <br> - Tool: Download top 3 related PDFs.
+            <br> - Tool: Compare Student Hypothesis vs. Existing Papers.
+          </div>
+          <div class="step-item">
+            <strong>Reporting:</strong> Agent generates a "Novelty Score" and writes a report citing the overlapping
+            papers.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg> The 5 Integrated Projects</h2>
+      <p>Throughout this course, we will build specialized agents for these 5 domains.</p>
+
+      <div class="card" style="padding: 0;">
+        <div class="use-case-item">
+          <div class="circle-num">1</div>
+          <div>
+            <strong>Learning Agents (Tutors)</strong>
+            <p style="font-size: 0.9rem; margin: 0;">Adaptive tutors that change explanation style based on user
+              confusion. Uses <em>Short-term Memory</em> heavily.</p>
+          </div>
+        </div>
+        <div class="use-case-item">
+          <div class="circle-num">2</div>
+          <div>
+            <strong>Research Agents</strong>
+            <p style="font-size: 0.9rem; margin: 0;">Autonomous literature review. Uses <em>Web Search Tools</em> and
+              <em>Summarization Chains</em>.
+            </p>
+          </div>
+        </div>
+        <div class="use-case-item">
+          <div class="circle-num">3</div>
+          <div>
+            <strong>Plagiarism Checker</strong>
+            <p style="font-size: 0.9rem; margin: 0;">Idea matching using Semantic Search (Vector DB), not just keyword
+              matching.</p>
+          </div>
+        </div>
+        <div class="use-case-item">
+          <div class="circle-num">4</div>
+          <div>
+            <strong>Data Analysis Agent</strong>
+            <p style="font-size: 0.9rem; margin: 0;">A "Code Interpreter" that writes Python scripts to clean CSVs and
+              generate charts.</p>
+          </div>
+        </div>
+        <div class="use-case-item">
+          <div class="circle-num">5</div>
+          <div>
+            <strong>Work Automation</strong>
+            <p style="font-size: 0.9rem; margin: 0;">Administrative handling. Connecting to Gmail/Calendar APIs to
+              schedule meetings.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+          <line x1="6" y1="6" x2="6.01" y2="6"></line>
+          <line x1="6" y1="18" x2="6.01" y2="18"></line>
+        </svg> Orchestration Patterns</h2>
+      <p>How do we manage multiple agents working together?</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Supervisor-Worker (The Boss)</h3>
+          <p>A central "Supervisor Agent" (usually GPT-4) breaks down the plan and delegates tasks to "Worker Agents"
+            (smaller, specialized models).</p>
+          <p><em>Example: Supervisor tells "Researcher" to find data, then tells "Writer" to format it.</em></p>
+        </div>
+        <div class="card">
+          <h3>Sequential Handoffs (The Relay)</h3>
+          <p>Agent A finishes a task and passes the entire context to Agent B. No central boss.</p>
+          <p><em>Example: "Email Agent" receives a complaint -> passes to "Support Agent" -> passes to "Ticket
+              Agent".</em></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg> Logic Check</h2>
+      <p>Before designing, we must understand the limitations.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>The Human Process</h3>
+          <p><strong>Task: Grading</strong></p>
+          <ol style="margin-left: 20px; line-height: 2;">
+            <li>Read student answer.</li>
+            <li>Check against answer key.</li>
+            <li>Decide partial marks.</li>
+            <li>Write feedback.</li>
+          </ol>
+        </div>
+
+        <div class="card" style="background: var(--bg-body); border: 2px dashed var(--border);">
+          <h3>The Agent Logic</h3>
+          <p><strong>Quiz:</strong> The agent is unsure if an answer is correct. What should a robust agent do?</p>
+
+          <button class="btn btn-outline" style="width: 100%; margin-bottom: 10px; text-align: left;"
+            onclick="checkAnswer(this, false)">A. Hallucinate a grade to finish quickly.</button>
+          <button class="btn btn-outline" style="width: 100%; margin-bottom: 10px; text-align: left;"
+            onclick="checkAnswer(this, true)">B. Trigger a 'Human-in-the-loop' flag.</button>
+          <button class="btn btn-outline" style="width: 100%; text-align: left;" onclick="checkAnswer(this, false)">C.
+            Retry the same check 50 times.</button>
+          <p id="quiz-feedback" style="margin-top: 10px; font-size:small; font-weight: 600; min-height: 24px;"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2><svg class="icon" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg> Day 1 Assignment</h2>
+      <div class="card card-highlight">
+        <h3>Task: The Workflow Blueprint</h3>
+        <p>Before we code tomorrow, select ONE real-world academic task and define it using this structure.</p>
+
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 15px;">
+          <p><strong>1. Trigger:</strong> (e.g., Uploading a Thesis PDF)</p>
+          <p><strong>2. Core Goal:</strong> (e.g., Check for novel ideas)</p>
+          <p><strong>3. Tools Required:</strong> (e.g., Web Search, PDF Reader)</p>
+          <p><strong>4. Success Metric:</strong> (e.g., A report is generated without errors)</p>
+        </div>
+      </div>
+      <p>Bring this blueprint tomorrow. We will code the Agent Lifecycle.</p>
+    </section>
+
+  </div>
+
+  <div class="nav-bar">
+    <button class="btn btn-outline" onclick="moveSlide(-1)">Previous</button>
+    <div id="slide-indicator" style="font-weight: 600; color: var(--text-secondary);">1 / 12</div>
+    <button class="btn" onclick="moveSlide(1)">Next Step</button>
+  </div>
+
+  <script>
+    /* --- SLIDESHOW LOGIC --- */
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const indicator = document.getElementById('slide-indicator');
+
+    function moveSlide(dir) {
+      slides[currentSlide].classList.remove('active');
+      currentSlide += dir;
+      if (currentSlide < 0) currentSlide = 0;
+      if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+      slides[currentSlide].classList.add('active');
+      indicator.innerText = `${currentSlide + 1} / ${slides.length}`;
+    }
+
+    /* --- TOGGLE INTERACTION (SLIDE 2) --- */
+    function setMode(mode) {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.comp-content').forEach(c => c.classList.remove('active'));
+
+      if (mode === 'standard') {
+        document.querySelectorAll('.toggle-btn')[0].classList.add('active');
+        document.getElementById('standard').classList.add('active');
+      } else {
+        document.querySelectorAll('.toggle-btn')[1].classList.add('active');
+        document.getElementById('agentic').classList.add('active');
+      }
+    }
+
+    /* --- ANATOMY INTERACTION (SLIDE 6) --- */
+    const anatomyData = {
+      brain: { title: "The Brain (LLM)", text: "The Large Language Model provides the reasoning capability. It decomposes complex goals into steps but requires tools to interact with the world." },
+      tools: { title: "Tools (Action)", text: "Interfaces that allow the agent to affect the world. Examples: Python REPL for math, Google Search API for data, or File System access." },
+      planning: { title: "Planning (Logic)", text: "The ability to break a goal into sub-tasks (Chain of Thought). It handles error recovery: 'If search fails, try a different keyword'." },
+      memory: { title: "Memory (Context)", text: "Short-term memory stores the current thought process. Long-term memory (Vector DB) stores historical data to learn from past interactions." }
+    };
+
+    function showPart(key, el) {
+      document.querySelectorAll('.anatomy-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      const box = document.getElementById('desc-box');
+      const title = document.getElementById('part-title');
+      const text = document.getElementById('part-text');
+
+      box.style.display = 'block';
+      title.innerText = anatomyData[key].title;
+      text.innerText = anatomyData[key].text;
+    }
+
+    /* --- AGENT BUILDER SIMULATION (SLIDE 7) --- */
+    function runSimulation() {
+      const consoleDiv = document.getElementById('agent-console');
+      const role = document.getElementById('agent-role').value;
+      const search = document.getElementById('tool-search').checked;
+      const python = document.getElementById('tool-python').checked;
+
+      consoleDiv.innerHTML = ''; // Clear previous logs
+
+      const logs = [];
+
+      // Step 1: Initialization
+      logs.push({ text: `> Initializing Agent... [Role: ${role.toUpperCase()}]`, type: 'normal' });
+
+      // Step 2: Goal Setting
+      let goal = "";
+      if (role === 'research') goal = "Find latest papers on 'Agentic AI' and summarize.";
+      if (role === 'data') goal = "Analyze 'sales.csv' and plot trends.";
+      if (role === 'tutor') goal = "Explain 'Quantum Mechanics' to a 10th grader.";
+      logs.push({ text: `> User Input: "${goal}"`, type: 'normal' });
+
+      // Step 3: Thought Process (Chain of Thought)
+      logs.push({ text: `> THOUGHT: I need to decompose this goal.`, type: 'thought' });
+
+      // Step 4: Tool Selection Logic
+      if (role === 'research') {
+        if (search) {
+          logs.push({ text: `> PLAN: 1. Use [Web Search] for latest papers. 2. Summarize.`, type: 'thought' });
+          logs.push({ text: `> ACTION: Calling Tool [GoogleSearch("Agentic AI")]`, type: 'action' });
+          logs.push({ text: `> OBSERVATION: Found 3 PDFs. Downloading...`, type: 'result' });
+          logs.push({ text: `> THOUGHT: Now I need to summarize.`, type: 'thought' });
+          logs.push({ text: `> FINAL ANSWER: Here is the summary of the top 3 papers...`, type: 'result' });
+        } else {
+          logs.push({ text: `> ERROR: I need to search the web, but no Search Tool is equipped!`, type: 'error' });
+          logs.push({ text: `> RETRY: Asking user for context instead.`, type: 'thought' });
+        }
+      } else if (role === 'data') {
+        if (python) {
+          logs.push({ text: `> PLAN: 1. Load CSV using Python. 2. Generate Plot.`, type: 'thought' });
+          logs.push({ text: `> ACTION: Executing Python [pd.read_csv('sales.csv')]`, type: 'action' });
+          logs.push({ text: `> OBSERVATION: Data loaded. 500 rows.`, type: 'result' });
+          logs.push({ text: `> FINAL ANSWER: Chart generated at /outputs/chart.png`, type: 'result' });
+        } else {
+          logs.push({ text: `> ERROR: Cannot analyze data without Python tool!`, type: 'error' });
+        }
+      } else {
+        logs.push({ text: `> PLAN: Retrieve knowledge from internal weights.`, type: 'thought' });
+        logs.push({ text: `> ACTION: Generating explanation...`, type: 'result' });
+      }
+
+      // Render Logs with Delay
+      let delay = 0;
+      logs.forEach(log => {
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.className = 'log-line';
+          div.innerText = log.text;
+          if (log.type === 'thought') div.classList.add('log-thought');
+          if (log.type === 'action') div.classList.add('log-action');
+          if (log.type === 'result') div.classList.add('log-result');
+          if (log.type === 'error') div.classList.add('log-error');
+          consoleDiv.appendChild(div);
+          consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }, delay);
+        delay += 800;
+      });
+    }
+
+    /* --- QUIZ INTERACTION (SLIDE 11) --- */
+    function checkAnswer(btn, isCorrect) {
+      const feedback = document.getElementById('quiz-feedback');
+      if (isCorrect) {
+        btn.style.background = '#dcfce7'; // light green
+        btn.style.borderColor = '#16a34a';
+        feedback.style.color = '#16a34a';
+        feedback.innerText = "Correct! Robust agents should escalate ambiguity to humans (HITL).";
+      } else {
+        btn.style.background = '#fee2e2'; // light red
+        btn.style.borderColor = '#dc2626';
+        feedback.style.color = '#dc2626';
+        feedback.innerText = "Incorrect. Hallucinating or looping blindly are failure modes.";
+      }
+    }
+  </script>
+
+</body>
+
+</html>

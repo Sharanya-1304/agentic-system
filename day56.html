@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 5 & 6: Automation & Workflows</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+/* --- THEME: ENTERPRISE SLATE & TEAL (Light) --- */
+:root {
+  --bg-body: #f8fafc;       /* Slate 50 */
+  --bg-card: #ffffff;       /* White */
+  --text-primary: #0f172a;  /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --accent: #0f766e;        /* Teal 700 */
+  --accent-light: #f0fdfa;  /* Teal 50 */
+  --border: #e2e8f0;
+  --success: #15803d;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- ICONS --- */
+.icon { width: 20px; height: 20px; vertical-align: middle; stroke-width: 2; fill: none; stroke: currentColor; margin-right: 6px; }
+
+/* --- SLIDE CONTAINER --- */
+.slide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 20px 100px 20px; /* Bottom padding for nav */
+  scroll-behavior: smooth;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.slide {
+  display: none;
+  animation: fadeUp 0.5s ease-out forwards;
+}
+.slide.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TYPOGRAPHY --- */
+h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-primary); }
+h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); display: flex; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+p { font-size: 1.05rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 1.2rem; }
+ul, ol { margin-left: 20px; margin-bottom: 20px; line-height: 1.7; color: var(--text-secondary); }
+li { margin-bottom: 8px; }
+
+/* --- CARDS --- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+.card-highlight { border-left: 5px solid var(--accent); background: var(--accent-light); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* --- CODE BLOCKS (Highlight.js Overrides) --- */
+pre {
+  margin: 0 0 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+/* Ensure code blocks in grid fit */
+.grid-2 pre { font-size: 0.8rem !important; }
+
+/* --- SIMULATORS --- */
+/* Relay Sim */
+.relay-track {
+  display: flex; justify-content: space-between; align-items: center; 
+  background: #f1f5f9; padding: 20px; border-radius: 12px; position: relative; margin-top:20px;
+}
+.relay-node {
+  width: 80px; height: 80px; background: white; border: 2px solid var(--border); 
+  border-radius: 50%; display: flex; flex-direction: column; align-items: center; 
+  justify-content: center; z-index: 2; font-size: 0.7rem; font-weight: bold; text-align: center;
+  transition: 0.3s;
+}
+.relay-node.active { border-color: var(--accent); background: var(--accent-light); transform: scale(1.1); box-shadow: 0 0 15px rgba(15,118,110,0.3); }
+.relay-line {
+  position: absolute; top: 50%; left: 40px; right: 40px; height: 4px; background: var(--border); z-index: 1;
+}
+.relay-packet {
+  width: 20px; height: 20px; background: var(--accent); border-radius: 50%;
+  position: absolute; top: 50%; left: 40px; transform: translate(-50%, -50%); z-index: 3;
+  transition: left 0.5s ease-in-out;
+}
+
+/* Router Sim */
+.router-viz {
+  display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 20px;
+}
+.router-node {
+  padding: 15px 30px; border: 2px solid var(--text-primary); border-radius: 8px; background: white; font-weight: bold;
+}
+.branch-container {
+  display: flex; gap: 40px;
+}
+.branch-node {
+  padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; opacity: 0.5; transition: 0.3s; width: 120px; text-align: center;
+}
+.branch-node.selected { opacity: 1; background: var(--accent-light); border-color: var(--accent); transform: scale(1.05); font-weight: bold;}
+
+/* Pipeline Sim (Day 6) */
+.pipeline-stage {
+  padding: 15px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px;
+  background: white; display: flex; align-items: center; gap: 15px; opacity: 0.6; transition: 0.3s;
+}
+.pipeline-stage.active { opacity: 1; border-color: var(--accent); border-left: 5px solid var(--accent); }
+.status-dot { width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; }
+.pipeline-stage.active .status-dot { background: #eab308; animation: pulse 1s infinite; }
+.pipeline-stage.done .status-dot { background: var(--success); }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* --- NAVIGATION BAR --- */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  height: 80px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 40px; z-index: 100;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+.btn {
+  background: var(--text-primary); color: white; border: none; padding: 12px 24px;
+  border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.btn:hover { background: #334155; transform: translateY(-1px); }
+.btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-primary); }
+.btn-secondary:hover { background: #f1f5f9; }
+.progress-counter { font-weight: 600; color: var(--text-secondary); }
+
+/* --- TAGS --- */
+.tag { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+.tag-day5 { background: #dbeafe; color: #1e40af; } 
+.tag-day6 { background: #fef3c7; color: #92400e; }
+
+/* Input Fields */
+input[type="text"] {
+  padding: 10px; width: 70%; border: 1px solid var(--border); border-radius: 6px; font-family: inherit;
+}
+</style>
+</head>
+<body>
+
+<div class="slide-container">
+
+  <section class="slide active">
+    <div style="text-align: center; margin-top: 40px;">
+      <span class="tag tag-day5">Day 5</span> <span class="tag tag-day6">Day 6</span>
+      <h1>Automation & Workflows</h1>
+      <p style="font-size: 1.3rem; margin-top: 10px;">From Single Agents to Orchestrated Pipelines.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top: 50px;">
+      <div class="card" style="border-top: 5px solid #2563eb;">
+        <h3>Day 5: The Pipeline</h3>
+        <ul>
+          <li>Connecting Agents (Chains)</li>
+          <li>Context Propagation (The Baton)</li>
+          <li>Atomic vs. Composite Tasks</li>
+          <li><strong>Use Case:</strong> Plagiarism Checker</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top: 5px solid #ca8a04;">
+        <h3>Day 6: Advanced Logic</h3>
+        <ul>
+          <li>Branching (If/Else Routing)</li>
+          <li>Parallel Execution (Fan-out)</li>
+          <li>Optimization Strategies</li>
+          <li><strong>Use Case:</strong> Data Analysis Agent</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day5">Day 5: Concepts</span>
+    <h2>What is a Workflow?</h2>
+    <p>A single agent is a worker. A <strong>Workflow</strong> is the assembly line.</p>
+    
+    <div class="card">
+      <h3>Atomic vs. Composite</h3>
+      <div class="grid-2">
+        <div>
+          <h4>Atomic (Single Step)</h4>
+          <p>An agent that does one thing perfectly.</p>
+          <pre><code class="language-python"># Single Task
+summary = Summarizer.run(text)</code></pre>
+        </div>
+        <div>
+          <h4>Composite (Pipeline)</h4>
+          <p>A chain of atomic agents passing data.</p>
+          <pre><code class="language-python"># Chained Workflow
+data = search(query)
+text = read(data)
+summ = summarize(text)
+email(summ)</code></pre>
+        </div>
+      </div>
+    </div>
+    <p><strong>Key Principle:</strong> Do not build "God Agents" that do everything. Build small specialists and chain them.</p>
+  </section>
+
+  <section class="slide">
+    <h2>Data Flow & Context Handoff</h2>
+    <p>The hardest part of automation is <strong>Context Propagation</strong>. How does Agent B know what Agent A found?</p>
+    
+    <div class="card">
+      <h3>The "State" Object</h3>
+      <p>We pass a shared dictionary (State) between agents.</p>
+      <pre><code class="language-python">state = {
+  "original_query": "Check thesis.pdf for plagiarism",
+  "extracted_text": "...",  # Added by PDF Agent
+  "search_results": [...],  # Added by Search Agent
+  "final_score": 0.85       # Added by Critic Agent
+}</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg> Simulator: The Token Relay</h2>
+    <p>Visualize how data transforms as it moves through a sequential pipeline.</p>
+
+    <div class="card">
+      <div style="text-align:center; margin-bottom:10px;">
+        <button class="btn" onclick="runRelay()">Start Pipeline</button>
+      </div>
+
+      <div class="relay-track">
+        <div class="relay-line"></div>
+        <div class="relay-packet" id="packet"></div>
+        
+        <div class="relay-node" id="node-1">Input<br>(PDF)</div>
+        <div class="relay-node" id="node-2" style="left: 33%;">Extractor<br>(Text)</div>
+        <div class="relay-node" id="node-3" style="left: 66%;">Searcher<br>(Links)</div>
+        <div class="relay-node" id="node-4" style="left: 100%;">Reporter<br>(PDF)</div>
+      </div>
+
+      <div id="relay-status" style="margin-top: 20px; font-family: monospace; color: var(--accent); font-weight: bold; text-align: center; height: 20px;">
+        Waiting to start...
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day5">Use Case Build</span>
+    <h2>Design: Plagiarism Checker</h2>
+    <p>We will build this pipeline using a linear chain.</p>
+
+    <div class="card">
+      <h3>The Linear Flow Code</h3>
+      <pre><code class="language-python">class PlagiarismPipeline:
+    def run(self, pdf):
+        # Step 1: Parse
+        text = self.parser.extract(pdf)
+        
+        # Step 2: Research
+        evidence = self.researcher.search(text)
+        
+        # Step 3: Evaluate
+        report = self.judge.evaluate(text, evidence)
+        
+        return report</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day6">Day 6: Advanced</span>
+    <h2>Beyond Linear Chains</h2>
+    <p>Real world tasks are not always Step 1 -> Step 2. They require logic.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Conditional Branching</h3>
+        <p>If X happens, do A. If Y happens, do B.</p>
+        <p><em>Example: If data is dirty -> Clean it. If clean -> Analyze it.</em></p>
+      </div>
+      <div class="card">
+        <h3>Parallel Execution</h3>
+        <p>Run multiple agents at the same time (Fan-out) and aggregate results (Fan-in).</p>
+        <p><em>Example: Search Google, Bing, and Wikipedia simultaneously.</em></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>The Router Pattern</h2>
+    <p>A "Gateway Agent" analyzes the user request and routes it to the correct specialist.</p>
+    
+    <div class="card card-highlight">
+      <h3>Why use a Router?</h3>
+      <p>Specialized agents perform better than general ones. A "Math Agent" is better at calculation than a "Poetry Agent". The Router ensures the right tool for the job.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Simulator: The Semantic Router</h2>
+    <p>Type a task. Watch the Router classify intent and activate the correct path.</p>
+
+    <div class="card" style="text-align: center;">
+      <input type="text" id="router-input" placeholder="e.g., 'Calculate 50 * 12' or 'Write a poem about code'">
+      <button class="btn" onclick="runRouter()">Route Request</button>
+
+      <div class="router-viz">
+        <div class="router-node" id="router-brain">🤖 Router Agent</div>
+        <div style="height: 30px; border-left: 2px dashed #cbd5e1;"></div>
+        
+        <div class="branch-container">
+          <div class="branch-node" id="branch-math">
+            <div style="font-size:2rem;">🧮</div>
+            <div>Math Agent</div>
+          </div>
+          <div class="branch-node" id="branch-write">
+            <div style="font-size:2rem;">✍️</div>
+            <div>Creative Agent</div>
+          </div>
+          <div class="branch-node" id="branch-data">
+            <div style="font-size:2rem;">📊</div>
+            <div>Data Agent</div>
+          </div>
+        </div>
+      </div>
+      <p id="router-log" style="margin-top:20px; font-weight:bold; color:var(--text-secondary); min-height:24px;"></p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day6">Use Case Build</span>
+    <h2>Design: Data Analysis Agent</h2>
+    <p>This workflow requires branching and loops.</p>
+
+    <div class="card">
+      <div class="pipeline-stage" id="p-load">
+        <div class="status-dot"></div> <strong>Step 1: Load Data</strong> (CSV/Excel)
+      </div>
+      <div class="pipeline-stage" id="p-check">
+        <div class="status-dot"></div> <strong>Step 2: Quality Check</strong> (Router Decision)
+      </div>
+      <div style="display:flex; gap:10px; margin-left:20px;">
+        <div class="pipeline-stage" id="p-clean" style="flex:1; border-style:dashed;">
+          <div class="status-dot"></div> <em>Branch A: Cleaner Agent</em> (If missing values)
+        </div>
+        <div class="pipeline-stage" id="p-viz" style="flex:1;">
+          <div class="status-dot"></div> <em>Branch B: Visualizer Agent</em> (If clean)
+        </div>
+      </div>
+      <div class="pipeline-stage" id="p-report">
+        <div class="status-dot"></div> <strong>Step 3: Final Report</strong>
+      </div>
+      
+      <div style="margin-top:15px; text-align:right;">
+        <button class="btn btn-secondary" onclick="runDataPipeline()">Simulate Data Flow</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Implementing Branching (Python)</h2>
+    <p>Using <code>langgraph</code> or simple conditional logic.</p>
+
+    <pre><code class="language-python">def router(state):
+    # Decide where to go based on data quality
+    if state["missing_values"] > 0:
+        return "cleaner_agent"
+    else:
+        return "visualizer_agent"
+
+# Define the Workflow Graph
+workflow = StateGraph(State)
+workflow.add_node("router", router)
+workflow.add_node("cleaner", cleaner_agent)
+workflow.add_node("visualizer", visualizer_agent)
+
+# Define Routing Logic
+workflow.add_conditional_edges("router", {
+    "cleaner_agent": "cleaner",
+    "visualizer_agent": "visualizer"
+})</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Optimization Strategies</h2>
+    <p>Pipelines can get expensive and slow. How do we fix this?</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Caching (The Wallet Saver)</h3>
+        <p>If Step 1 (Search) costs $0.10 and takes 5s, <strong>Cache it</strong>. If the user asks the same question, return the cached result instantly.</p>
+      </div>
+      <div class="card">
+        <h3>Model Cascade</h3>
+        <p>Don't use GPT-4 for everything.
+        <br>1. Use <strong>Llama-3-8B</strong> (Fast/Cheap) for routing/formatting.
+        <br>2. Use <strong>GPT-4</strong> (Smart/Expensive) only for complex reasoning.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Assignment: The Architect</h2>
+    <div class="card card-highlight">
+      <h3>Design Your Pipeline</h3>
+      <p>For your project (Learning or Research Agent):</p>
+      <ol>
+        <li>Draw the flowchart (Nodes & Edges).</li>
+        <li>Identify one <strong>Conditional Branch</strong> (e.g., If PDF is scanned -> Use OCR Agent).</li>
+        <li>Identify where you can pass <strong>State</strong> (e.g., Passing the extracted text).</li>
+      </ol>
+      <p><em>Deliverable: A diagram or pseudocode of your workflow.</em></p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar">
+  <button class="btn btn-secondary" onclick="moveSlide(-1)">Previous</button>
+  <span class="progress-counter" id="counter">1 / 12</span>
+  <button class="btn" onclick="moveSlide(1)">Next</button>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+
+  function updateSlide() {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[currentSlide].classList.add('active');
+    counter.innerText = `${currentSlide + 1} / ${slides.length}`;
+    document.querySelector('.slide-container').scrollTop = 0;
+  }
+
+  function moveSlide(dir) {
+    if (dir === 1 && currentSlide < slides.length - 1) currentSlide++;
+    if (dir === -1 && currentSlide > 0) currentSlide--;
+    updateSlide();
+  }
+
+  // Initialize highlight.js
+  document.addEventListener('DOMContentLoaded', (event) => {
+    hljs.highlightAll();
+  });
+
+  /* --- SIM 1: RELAY --- */
+  function runRelay() {
+    const packet = document.getElementById('packet');
+    const status = document.getElementById('relay-status');
+    const nodes = document.querySelectorAll('.relay-node');
+    
+    // Reset
+    packet.style.left = "40px";
+    nodes.forEach(n => n.classList.remove('active'));
+    
+    const sequence = [
+      { t: 0, text: "Step 1: Input Received", node: 0 },
+      { t: 1000, text: "Step 2: Text Extracted", pos: "33%", node: 1 },
+      { t: 2000, text: "Step 3: Web Search Complete", pos: "66%", node: 2 },
+      { t: 3000, text: "Step 4: Report Generated", pos: "93%", node: 3 },
+      { t: 4000, text: "Pipeline Finished", done: true }
+    ];
+
+    sequence.forEach(step => {
+      setTimeout(() => {
+        status.innerText = step.text;
+        if (step.pos) packet.style.left = step.pos;
+        if (step.node !== undefined) nodes[step.node].classList.add('active');
+        if (step.done) status.style.color = "var(--success)";
+      }, step.t);
+    });
+  }
+
+  /* --- SIM 2: ROUTER --- */
+  function runRouter() {
+    const input = document.getElementById('router-input').value.toLowerCase();
+    const log = document.getElementById('router-log');
+    
+    // Reset visuals
+    document.querySelectorAll('.branch-node').forEach(n => n.classList.remove('selected'));
+    
+    log.innerText = "Analyzing intent...";
+    
+    setTimeout(() => {
+      let targetId = "";
+      let msg = "";
+
+      if (input.includes("calc") || input.includes("math") || input.includes("+") || input.includes("*")) {
+        targetId = "branch-math";
+        msg = "Intent: CALCULATION -> Routing to Math Agent";
+      } else if (input.includes("write") || input.includes("poem") || input.includes("story")) {
+        targetId = "branch-write";
+        msg = "Intent: CREATIVE -> Routing to Creative Agent";
+      } else {
+        targetId = "branch-data";
+        msg = "Intent: DATA/GENERAL -> Routing to Data Agent";
+      }
+
+      document.getElementById(targetId).classList.add('selected');
+      log.innerText = msg;
+    }, 600);
+  }
+
+  /* --- SIM 3: DATA PIPELINE --- */
+  function runDataPipeline() {
+    const stages = ['p-load', 'p-check', 'p-clean', 'p-viz', 'p-report'];
+    
+    // Reset
+    stages.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active', 'done');
+    });
+
+    // Simulate flow with a random "Dirty Data" decision
+    const isDirty = Math.random() > 0.5;
+    
+    setTimeout(() => setStage('p-load', 'active'), 0);
+    setTimeout(() => { setStage('p-load', 'done'); setStage('p-check', 'active'); }, 1000);
+    
+    setTimeout(() => {
+      setStage('p-check', 'done');
+      if(isDirty) {
+        // Go to Clean
+        setStage('p-clean', 'active');
+        setTimeout(() => { setStage('p-clean', 'done'); setStage('p-report', 'active'); }, 1500);
+      } else {
+        // Go to Viz
+        setStage('p-viz', 'active');
+        setTimeout(() => { setStage('p-viz', 'done'); setStage('p-report', 'active'); }, 1500);
+      }
+    }, 2000);
+
+    setTimeout(() => setStage('p-report', 'done'), 4500);
+  }
+
+  function setStage(id, state) {
+    document.getElementById(id).classList.add(state);
+    if(state === 'active') document.getElementById(id).classList.remove('done');
+  }
+
+  // Init
+  updateSlide();
+</script>
+
+</body>
+</html>

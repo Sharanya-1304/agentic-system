@@ -1,0 +1,33 @@
+{
+  "intent": {
+    "goal": "order_food",
+    "items": [
+      "pizza"
+    ],
+    "preferences": {
+      "spice_level": "medium"
+    },
+    "constraints": {
+      "delivery": "fast"
+    }
+  },
+  "plan": {
+    "tasks": [
+      "Prepare pizza"
+    ],
+    "estimated_cost": 10,
+    "estimated_time": 35
+  },
+  "result": {
+    "order_id": "ORD2389",
+    "status": "confirmed",
+    "tasks": [
+      "Prepare pizza"
+    ],
+    "total_cost": 10,
+    "estimated_delivery_time": "35 minutes",
+    "timestamp": "2026-04-24 14:01:59.416181"
+  },
+  "customer_name": "Guest",
+  "customer_note": ""
+}

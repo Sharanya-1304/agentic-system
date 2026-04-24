@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3 & 4: Resilience & Roles</title>
+<style>
+/* --- PROFESSIONAL THEME: Slate & Teal --- */
+:root {
+  --bg-body: #f8fafc;       /* Slate 50 */
+  --bg-card: #ffffff;       /* White */
+  --text-primary: #0f172a;  /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --accent: #0f766e;        /* Teal 700 */
+  --accent-light: #f0fdfa;  /* Teal 50 */
+  --border: #e2e8f0;
+  --success: #15803d;       /* Green 700 */
+  --warning: #b45309;       /* Amber 700 */
+  --error: #b91c1c;         /* Red 700 */
+  --code-bg: #1e293b;       /* Slate 800 */
+  --font-stack: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+body {
+  font-family: var(--font-stack);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- ICONS --- */
+.icon { width: 20px; height: 20px; vertical-align: middle; stroke-width: 2; fill: none; stroke: currentColor; margin-right: 6px; }
+.icon-lg { width: 40px; height: 40px; margin-bottom: 12px; stroke: var(--accent); stroke-width: 1.5; }
+
+/* --- LAYOUT --- */
+.slide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  scroll-behavior: smooth;
+}
+
+.slide {
+  display: none;
+  max-width: 900px;
+  margin: 0 auto 60px auto;
+  animation: fadeUp 0.4s ease-out forwards;
+}
+.slide.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TYPOGRAPHY --- */
+h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-primary); }
+h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+p { font-size: 1rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem; }
+ul { margin-left: 20px; margin-bottom: 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+
+/* --- CARDS --- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+}
+.card-highlight { border-left: 4px solid var(--accent); background: var(--accent-light); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  h1 { font-size: 1.5rem; }
+  .card { padding: 16px; }
+}
+
+/* --- BUTTONS --- */
+.btn {
+  background: var(--text-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-outline { background: white; border: 1px solid var(--border); color: var(--text-primary); }
+
+/* --- SIMULATOR 1: ERROR RECOVERY (Day 3) --- */
+.console-window {
+  background: var(--code-bg);
+  color: #a5b4fc;
+  font-family: 'Courier New', monospace;
+  padding: 15px;
+  border-radius: 8px;
+  height: 250px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  border: 1px solid #334155;
+  margin-bottom: 15px;
+}
+.log-entry { margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+.log-success { color: #4ade80; }
+.log-error { color: #f87171; }
+.log-retry { color: #fbbf24; }
+
+/* --- SIMULATOR 2: ROLE SWITCHER (Day 4) --- */
+.role-selector {
+  display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px;
+}
+.role-btn {
+  padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; background: white; white-space: nowrap; font-size: 0.9rem;
+}
+.role-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.role-display {
+  background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px;
+}
+.system-prompt-box {
+  background: #f1f5f9; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; color: #475569; margin-bottom: 15px; border-left: 3px solid var(--accent);
+}
+
+/* --- NAV BAR --- */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  height: 70px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 20px; z-index: 10;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+.progress-pill {
+  background: #f1f5f9; padding: 5px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+}
+
+/* --- TAGS --- */
+.tag { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+.tag-day3 { background: #dbeafe; color: #1e40af; } /* Blue */
+.tag-day4 { background: #fef3c7; color: #92400e; } /* Amber */
+
+</style>
+</head>
+<body>
+
+<div class="slide-container">
+
+  <section class="slide active">
+    <div style="margin-top: 40px; text-align: center;">
+      <span class="tag tag-day3">Day 3</span> <span class="tag tag-day4">Day 4</span>
+      <h1>Advanced Agents & Roles</h1>
+      <p style="max-width: 600px; margin: 0 auto;">Building resilient, self-healing systems and defining specialized personas for complex workflows.</p>
+    </div>
+
+    <div class="grid-2" style="margin-top: 40px;">
+      <div class="card" style="border-top: 4px solid #3b82f6;">
+        <h3>Day 3: Resilience</h3>
+        <ul style="font-size: 0.9rem;">
+          <li>Multi-step Reasoning (ReAct)</li>
+          <li>Tool-Use Patterns</li>
+          <li><strong>Error Recovery Loops</strong></li>
+          <li>Refinement & Self-Correction</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top: 4px solid #f59e0b;">
+        <h3>Day 4: Specialization</h3>
+        <ul style="font-size: 0.9rem;">
+          <li>Defining Roles & Constraints</li>
+          <li>Domain Knowledge Embedding</li>
+          <li>Role Switching</li>
+          <li>Research Automation Use Case</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day3">Day 3: Architecture</span>
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> The Reasoning Loop</h2>
+    <p>Simple scripts fail when tools break. <strong>Agentic Loops</strong> are designed to fail and recover.</p>
+
+    <div class="card">
+      <h3>The "Refinement" Pattern</h3>
+      <p>Instead of giving up on error, the agent analyzes the error and adjusts its plan.</p>
+      
+      <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; line-height: 1.5;">
+        <span style="color:blue">Goal:</span> "Summarize URL"<br>
+        <span style="color:green">Attempt 1:</span> Scrape(URL) -> <span style="color:red">Error 403 (Forbidden)</span><br>
+        <span style="color:purple">Reflection:</span> "The site blocked me. I should try Google Cache or Archive.org."<br>
+        <span style="color:green">Attempt 2:</span> Scrape(Archive_URL) -> <span style="color:green">Success</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> Resilience Simulator</h2>
+    <p>Simulate an agent encountering a broken tool and self-correcting in real-time.</p>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="padding: 20px; border-bottom: 1px solid var(--border); background: #f8fafc;">
+        <strong>Scenario:</strong> Fetch a Research Paper PDF.
+        <div style="margin-top: 10px;">
+          <button class="btn" onclick="runResilienceSim()">Trigger Workflow</button>
+        </div>
+      </div>
+      
+      <div class="console-window" id="resilience-console">
+        <div style="color: #64748b;">> System Ready. Waiting for trigger...</div>
+      </div>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-secondary);">*Notice how the agent catches the "Timeout" and switches strategy automatically.</p>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day4">Day 4: Roles</span>
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Defining Roles</h2>
+    <p>A "Role" is a combination of <strong>Behavior</strong>, <strong>Knowledge</strong>, and <strong>Constraints</strong>.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>1. Specialization</h3>
+        <p>Don't ask one agent to do everything.
+        <br><strong>Bad:</strong> "You are a helpful assistant."
+        <br><strong>Good:</strong> "You are a Senior Python Architect specializing in pandas optimization."</p>
+      </div>
+      <div class="card card-highlight">
+        <h3>2. Constraints</h3>
+        <p>Defining what the agent <strong>cannot</strong> do is as important as what it can do.
+        <br><em>"Do not invent citations. If no data is found, state 'Unknown'."</em></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Role Switcher</h2>
+    <p>See how changing the System Prompt dramatically changes the output for the exact same query.</p>
+
+    <div class="card">
+      <div class="role-selector">
+        <button class="role-btn active" onclick="setRole('tutor')">🎓 Learning Agent</button>
+        <button class="role-btn" onclick="setRole('researcher')">🔬 Research Agent</button>
+        <button class="role-btn" onclick="setRole('compliance')">🛡️ Compliance Agent</button>
+      </div>
+
+      <div class="role-display">
+        <div class="system-prompt-box" id="system-prompt-display">
+          SYSTEM: You are an empathetic Tutor. Use analogies. No jargon.
+        </div>
+        
+        <p><strong>User Query:</strong> "Explain how Neural Networks learn."</p>
+        
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border);">
+          <strong>Agent Output:</strong>
+          <p id="agent-output" style="color: var(--text-primary); font-weight: 500; margin-top: 8px;">
+            Imagine a Neural Network like a team of musicians trying to play a new song. At first, they are noisy (random weights). But after every practice, the conductor tells them who was off-key (Backpropagation). Slowly, they tune their instruments until the song sounds perfect!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day3">Project: Use Case 1</span>
+    <h2>Learning Agent Architecture</h2>
+    <p>Applying Day 3 concepts to build the "Learning Support" module.</p>
+    
+    <div class="card">
+      <h3>Workflow Design</h3>
+      <ul style="list-style: none; margin-left: 0;">
+        <li><strong>1. Ingest:</strong> Student uploads a confusing PDF chapter.</li>
+        <li><strong>2. Analyze:</strong> Agent identifies key concepts and complexity level.</li>
+        <li><strong>3. Adapt (Reasoning):</strong>
+          <br><em>If student is beginner -> Generate Quiz + Glossary.</em>
+          <br><em>If student is advanced -> Generate Thesis Scenarios.</em>
+        </li>
+        <li><strong>4. Output:</strong> Return personalized study material.</li>
+      </ul>
+    </div>
+    
+    <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; font-size: 0.9rem;">
+      <strong>Self-Correction Mechanism:</strong> If the generated quiz is too hard (student scores &lt; 50%), the agent autonomously regenerates a simplified version.
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day4">Project: Use Case 2</span>
+    <h2>Research Automation Agent</h2>
+    <p>Applying Day 4 concepts to build the "Thesis Validation" module.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Role Definition</h3>
+        <p><strong>Role:</strong> Academic Auditor.</p>
+        <p><strong>Constraints:</strong></p>
+        <ul>
+          <li>Must use Google Scholar API.</li>
+          <li>Never use non-peer-reviewed blogs.</li>
+          <li>Must provide DOI links.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Logic Flow</h3>
+        <p><code>Input Thesis Title</code> ➔ <code>Extract Keywords</code> ➔ <code>Search(Scholar)</code> ➔ <code>Compare Vectors</code> ➔ <code>Calculate Novelty %</code></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Combined Assignment</h2>
+    <div class="card card-highlight">
+      <h3>Task: The Resilient Role</h3>
+      <p>Combine Day 3 & 4 learnings into a single Pseudocode design.</p>
+      
+      <ol style="margin-left: 20px; line-height: 1.8;">
+        <li><strong>Define the Role:</strong> Write the System Prompt for one of the 5 use cases.</li>
+        <li><strong>Define 3 Constraints:</strong> What is the agent NOT allowed to do?</li>
+        <li><strong>Design a Failure Loop:</strong> If the primary tool fails (e.g., API down), what is the backup plan?</li>
+      </ol>
+    </div>
+    <p>We will implement this in Python in the next session.</p>
+  </section>
+
+</div>
+
+<div class="nav-bar">
+  <button class="btn btn-outline" onclick="moveSlide(-1)">Previous</button>
+  <div class="progress-pill" id="slide-indicator">1 / 8</div>
+  <button class="btn" onclick="moveSlide(1)">Next</button>
+</div>
+
+<script>
+  /* --- SLIDESHOW LOGIC --- */
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const indicator = document.getElementById('slide-indicator');
+
+  function moveSlide(dir) {
+    slides[currentSlide].classList.remove('active');
+    currentSlide += dir;
+    if (currentSlide < 0) currentSlide = 0;
+    if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+    slides[currentSlide].classList.add('active');
+    indicator.innerText = `${currentSlide + 1} / ${slides.length}`;
+  }
+
+  /* --- SIMULATOR 1: RESILIENCE (Day 3) --- */
+  function runResilienceSim() {
+    const consoleDiv = document.getElementById('resilience-console');
+    consoleDiv.innerHTML = '';
+    
+    const logs = [
+      { text: "> [INIT] Agent 'PaperFetcher' started.", type: "normal", delay: 0 },
+      { text: "> [ACTION] Connecting to Repository API...", type: "normal", delay: 800 },
+      { text: "> [ERROR] Connection Timeout (500ms). Resource unavailable.", type: "error", delay: 1600 },
+      { text: "> [THOUGHT] Primary tool failed. Activating 'Refinement Loop'.", type: "retry", delay: 2400 },
+      { text: "> [PLAN] Switching to Mirror Server B.", type: "retry", delay: 3200 },
+      { text: "> [ACTION] Connecting to Mirror Server B...", type: "normal", delay: 4000 },
+      { text: "> [SUCCESS] Connection established. PDF found.", type: "success", delay: 4800 },
+      { text: "> [FINISH] Task completed via recovery path.", type: "success", delay: 5600 }
+    ];
+
+    logs.forEach(log => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        if(log.type === 'error') div.classList.add('log-error');
+        if(log.type === 'retry') div.classList.add('log-retry');
+        if(log.type === 'success') div.classList.add('log-success');
+        div.innerText = log.text;
+        consoleDiv.appendChild(div);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }, log.delay);
+    });
+  }
+
+  /* --- SIMULATOR 2: ROLE SWITCHER (Day 4) --- */
+  const roles = {
+    tutor: {
+      prompt: "SYSTEM: You are an empathetic Tutor. Use analogies. No jargon.",
+      output: "Imagine a Neural Network like a team of musicians trying to play a new song. At first, they are noisy (random weights). But after every practice, the conductor tells them who was off-key (Backpropagation). Slowly, they tune their instruments until the song sounds perfect!"
+    },
+    researcher: {
+      prompt: "SYSTEM: You are a PhD Researcher. Use technical precision. Cite methods.",
+      output: "Neural Networks optimize loss functions via Stochastic Gradient Descent. Through the backpropagation algorithm (Rumelhart et al., 1986), error gradients are propagated backward to update synaptic weights, minimizing the delta between predicted and actual values."
+    },
+    compliance: {
+      prompt: "SYSTEM: You are a Safety Officer. Only validate topics. Do not explain them.",
+      output: "[CONSTRAINT VIOLATION] My role is limited to safety checks. I cannot explain technical concepts. The topic 'Neural Networks' is flagged as SAFE for academic discussion. You may proceed with a Researcher Agent."
+    }
+  };
+
+  function setRole(roleKey) {
+    // Update Buttons
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Update Content with animation effect
+    const promptBox = document.getElementById('system-prompt-display');
+    const outputBox = document.getElementById('agent-output');
+    
+    promptBox.style.opacity = 0;
+    outputBox.style.opacity = 0;
+
+    setTimeout(() => {
+      promptBox.innerText = roles[roleKey].prompt;
+      outputBox.innerText = roles[roleKey].output;
+      
+      // Style changes based on role
+      if(roleKey === 'compliance') outputBox.style.color = '#b45309'; // Warning color
+      else outputBox.style.color = 'var(--text-primary)';
+      
+      promptBox.style.opacity = 1;
+      outputBox.style.opacity = 1;
+    }, 200);
+  }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 9 & 10: Advanced Reasoning</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+/* --- THEME: ENTERPRISE SLATE & TEAL (Light) --- */
+:root {
+  --bg-body: #f8fafc;       /* Slate 50 */
+  --bg-card: #ffffff;       /* White */
+  --text-primary: #0f172a;  /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --accent: #0f766e;        /* Teal 700 */
+  --accent-light: #f0fdfa;  /* Teal 50 */
+  --border: #e2e8f0;
+  --success: #15803d;
+  --warning: #b45309;
+  --error: #b91c1c;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- ICONS --- */
+.icon { width: 20px; height: 20px; vertical-align: middle; stroke-width: 2; fill: none; stroke: currentColor; margin-right: 6px; }
+
+/* --- SLIDE CONTAINER --- */
+.slide-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 20px 100px 20px;
+  scroll-behavior: smooth;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.slide {
+  display: none;
+  animation: fadeUp 0.5s ease-out forwards;
+}
+.slide.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TYPOGRAPHY --- */
+h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-primary); }
+h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); display: flex; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+p { font-size: 1.05rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 1.2rem; }
+ul, ol { margin-left: 20px; margin-bottom: 20px; line-height: 1.7; color: var(--text-secondary); }
+li { margin-bottom: 8px; }
+
+/* --- CARDS --- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+.card-highlight { border-left: 5px solid var(--accent); background: var(--accent-light); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* --- CODE BLOCKS --- */
+pre {
+  margin: 0 0 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+
+/* --- SIMULATOR 1: TREE OF THOUGHTS --- */
+.tot-container {
+  display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 20px;
+}
+.tot-node {
+  padding: 12px 20px; background: white; border: 2px solid var(--border); border-radius: 8px;
+  cursor: pointer; transition: 0.2s; min-width: 200px; text-align: center; position: relative;
+  font-size: 0.9rem;
+}
+.tot-node:hover { border-color: var(--accent); background: #f0fdfa; }
+.tot-node.selected { background: var(--accent); color: white; border-color: var(--accent); }
+.tot-node.discarded { opacity: 0.4; background: #fee2e2; border-color: #fca5a5; text-decoration: line-through; }
+
+.tot-level {
+  display: flex; gap: 20px; justify-content: center; width: 100%;
+}
+.tot-line {
+  height: 20px; width: 2px; background: var(--border); margin: 0 auto;
+}
+
+/* --- SIMULATOR 2: SELF CORRECTION --- */
+.critic-log {
+  background: #1e293b; color: #e2e8f0; font-family: monospace; padding: 15px; 
+  border-radius: 8px; height: 250px; overflow-y: auto; font-size: 0.85rem;
+}
+.log-step { margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+.role-badge { 
+  display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-bottom: 4px; 
+}
+.badge-gen { background: #3b82f6; color: white; }
+.badge-critic { background: #f59e0b; color: black; }
+.badge-final { background: #10b981; color: white; }
+
+/* --- NAV BAR --- */
+.nav-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: white; border-top: 1px solid var(--border);
+  height: 80px; display: flex; justify-content: space-between; align-items: center;
+  padding: 0 40px; z-index: 100;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+.btn {
+  background: var(--text-primary); color: white; border: none; padding: 12px 24px;
+  border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.btn:hover { background: #334155; transform: translateY(-1px); }
+.btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-primary); }
+.btn-secondary:hover { background: #f1f5f9; }
+.progress-counter { font-weight: 600; color: var(--text-secondary); }
+
+/* --- TAGS --- */
+.tag { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+.tag-day9 { background: #dbeafe; color: #1e40af; } 
+.tag-day10 { background: #fef3c7; color: #92400e; }
+
+</style>
+</head>
+<body>
+
+<div class="slide-container">
+
+  <section class="slide active">
+    <div style="text-align: center; margin-top: 40px;">
+      <span class="tag tag-day9">Day 9</span> <span class="tag tag-day10">Day 10</span>
+      <h1>Structured Reasoning & Decisions</h1>
+      <p style="font-size: 1.3rem; margin-top: 10px;">Teaching Agents "How to Think," not just "What to Say."</p>
+    </div>
+
+    <div class="grid-2" style="margin-top: 50px;">
+      <div class="card" style="border-top: 5px solid #2563eb;">
+        <h3>Day 9: Thinking Structures</h3>
+        <ul>
+          <li>Chain of Thought (CoT)</li>
+          <li>Tree of Thoughts (ToT)</li>
+          <li>Graph of Thoughts (GoT)</li>
+          <li><strong>Sim:</strong> Exploring Reasoning Branches</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top: 5px solid #ca8a04;">
+        <h3>Day 10: Critical Thinking</h3>
+        <ul>
+          <li>Self-Reflection & Correction</li>
+          <li>Data-Aware Reasoning</li>
+          <li>Consistency Checks</li>
+          <li><strong>Sim:</strong> The Critic Loop</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day9">Day 9: Reasoning</span>
+    <h2>1. Chain of Thought (CoT)</h2>
+    <p>Standard LLMs jump to conclusions. CoT forces them to show their work.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Standard Prompting</h3>
+        <p><strong>Input:</strong> Roger has 5 balls. He buys 2 cans of tennis balls. Each can has 3 balls. How many does he have?</p>
+        <p><strong>Output:</strong> 11.</p>
+        <p class="error" style="color:var(--error); font-size:0.9rem;">(Often wrong on complex math)</p>
+      </div>
+      <div class="card card-highlight">
+        <h3>CoT Prompting</h3>
+        <p><strong>Output:</strong> Roger started with 5. <br>2 cans * 3 balls = 6 balls. <br>5 + 6 = 11. <br><strong>Answer: 11.</strong></p>
+      </div>
+    </div>
+    
+    <div class="code-block">
+      <pre><code class="language-python"># Implementation: Just add this to your system prompt
+system_prompt = """
+Answer the user's question. 
+CRITICAL: Before answering, write out your step-by-step reasoning 
+inside <thought> tags.
+"""</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>2. Tree of Thoughts (ToT)</h2>
+    <p>For creative or complex tasks, one path isn't enough. ToT explores multiple possibilities and discards bad ones.</p>
+    
+    <div class="card">
+      <h3>The Algorithm</h3>
+      <ol style="line-height: 1.8;">
+        <li><strong>Decompose:</strong> Break problem into steps (e.g., Outline -> Draft -> Edit).</li>
+        <li><strong>Generate:</strong> Create 3 options for the current step.</li>
+        <li><strong>Evaluate:</strong> Score each option (0.0 to 1.0).</li>
+        <li><strong>Select:</strong> Keep the best, discard the rest.</li>
+      </ol>
+    </div>
+    [Image of Tree Structure Diagram]
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V6M5 12l7-7 7 7"></path></svg> Simulator: Tree of Thoughts</h2>
+    <p><strong>Task:</strong> "Plan a marketing slogan for a coffee brand."</p>
+    <p style="font-size:0.9rem;">Click a node to evaluate and expand the best path.</p>
+
+    <div class="card" style="background:#f8fafc; min-height: 400px;">
+      <div class="tot-container" id="tot-root">
+        <div class="tot-node selected" onclick="expandTree(1)">ROOT: "Coffee Brand Slogan"</div>
+        
+        <div class="tot-line lvl-1" style="display:none;"></div>
+        <div class="tot-level lvl-1" style="display:none;">
+          <div class="tot-node" onclick="evaluateNode(this, false)">A. "Wake Up Fast" <br><small>(Too Generic)</small></div>
+          <div class="tot-node" onclick="evaluateNode(this, true)">B. "Fuel Your Ambition" <br><small>(Strong Emotion)</small></div>
+          <div class="tot-node" onclick="evaluateNode(this, false)">C. "Brown Bean Water" <br><small>(Negative)</small></div>
+        </div>
+
+        <div class="tot-line lvl-2" style="display:none;"></div>
+        <div class="tot-level lvl-2" style="display:none;">
+          <div class="tot-node" onclick="finishTree(this)">1. Add Rhyme: <br>"Fuel for the Jewel"</div>
+          <div class="tot-node" onclick="finishTree(this)">2. Make it Punchy: <br>"Ambition. Fueled."</div>
+        </div>
+        
+        <div id="tot-result" style="margin-top:20px; font-weight:bold; color:var(--success);"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>3. Graph of Thoughts (GoT)</h2>
+    <p>Trees branch out, but Graphs can <strong>merge</strong> back. Thoughts can combine.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Concept</h3>
+        <p>Agent generates 3 distinct summaries of a document. Then, a 4th step <strong>aggregates</strong> the best parts of all 3 into a Master Summary.</p>
+      </div>
+      <div class="card">
+        <h3>Code Logic</h3>
+        <pre><code class="language-python"># NetworkX-style logic
+G.add_node("summary_1")
+G.add_node("summary_2")
+G.add_node("final_merge")
+G.add_edge("summary_1", "final_merge")
+G.add_edge("summary_2", "final_merge")</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day9">Practical Demo</span>
+    <h2>Applying Reasoning to Learning</h2>
+    <p>How a "Tutor Agent" uses CoT to grade a student.</p>
+
+    <div class="card card-highlight">
+      <h3>Internal Monologue (Invisible to Student)</h3>
+      <p><strong>Student Answer:</strong> "Photosynthesis is when plants eat dirt."</p>
+      <div style="background:white; padding:10px; border-radius:6px; font-family:monospace; margin-top:10px; border:1px dashed var(--border);">
+        &lt;thought&gt;<br>
+        1. Analyze accuracy: Incorrect. Plants perform synthesis, they don't eat dirt.<br>
+        2. Identify misconception: Confusing nutrient absorption with energy production.<br>
+        3. Plan response: Validate effort, correct the "dirt" part, explain light energy.<br>
+        &lt;/thought&gt;
+      </div>
+      <p><strong>Agent Output:</strong> "Not quite! Plants actually use sunlight to make food..."</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day10">Day 10: Decisions</span>
+    <h2>Decision-Making Strategies</h2>
+    <p>Reasoning is useless if the agent can't make a correct decision or spot an error.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Data-Aware</h3>
+        <p>Using RAG to fact-check <em>before</em> answering.</p>
+      </div>
+      <div class="card">
+        <h3>Self-Correction</h3>
+        <p>The "Critic" loop where the agent reviews its own work.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>The Self-Correction Loop</h2>
+    <p>Code generation agents often fail on the first try. We need a loop.</p>
+    
+    <div class="card">
+      <h3>The Architecture</h3>
+      <pre><code class="language-python">while attempts < max_retries:
+    code = generator.write_code(task)
+    error = executor.run(code)
+    
+    if not error:
+        return code # Success
+    
+    # The Critical Step
+    plan = critic.analyze(code, error)
+    generator.update_prompt(plan)</code></pre>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Simulator: The Critic Loop</h2>
+    <p>Watch the agent write bad SQL, fail, and fix it.</p>
+    
+    <button class="btn" onclick="runCriticSim()">Generate & Verify</button>
+
+    <div class="card" style="margin-top:15px; padding:0;">
+      <div class="critic-log" id="critic-log">
+        > Waiting for input...
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Multi-Modal Reasoning</h2>
+    <p>Decision making often involves looking at charts or PDFs.</p>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>Input</h3>
+        <p>User uploads a PDF Invoice.</p>
+      </div>
+      <div class="card">
+        <h3>Reasoning Chain</h3>
+        <p>1. <strong>OCR Tool:</strong> Extract text.<br>
+        2. <strong>Vision Model:</strong> Identify the total amount ($500).<br>
+        3. <strong>Logic:</strong> Check if Total > Limit ($100).<br>
+        4. <strong>Decision:</strong> Flag for manager approval.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="tag tag-day10">Use Case Build</span>
+    <h2>Reasoning in Thesis Validation</h2>
+    <p>Applying these concepts to the Plagiarism/Validation Agent.</p>
+
+    <div class="card">
+      <h3>The Validation Workflow</h3>
+      <ul>
+        <li><strong>Step 1 (Consistency):</strong> Does the Abstract match the Conclusion? (CoT check).</li>
+        <li><strong>Step 2 (Citation Check):</strong> Extract references. Are they real? (Tool verification).</li>
+        <li><strong>Step 3 (Novelty):</strong> Compare hypothesis against 100 recent papers (Vector Search).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Assignment: The Reasoner</h2>
+    <div class="card card-highlight">
+      <h3>Implement a CoT Prompt</h3>
+      <p>For your project:</p>
+      <ol>
+        <li>Take your most complex task (e.g., "Grading a paper").</li>
+        <li>Rewrite the System Prompt to force <strong>Chain of Thought</strong>.</li>
+        <li>Implement a simple <strong>Output Parser</strong> that extracts the reasoning into a separate log file.</li>
+      </ol>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar">
+  <button class="btn btn-secondary" onclick="moveSlide(-1)">Previous</button>
+  <span class="progress-counter" id="counter">1 / 12</span>
+  <button class="btn" onclick="moveSlide(1)">Next</button>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+
+  function updateSlide() {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[currentSlide].classList.add('active');
+    counter.innerText = `${currentSlide + 1} / ${slides.length}`;
+    document.querySelector('.slide-container').scrollTop = 0;
+  }
+
+  function moveSlide(dir) {
+    if (dir === 1 && currentSlide < slides.length - 1) currentSlide++;
+    if (dir === -1 && currentSlide > 0) currentSlide--;
+    updateSlide();
+  }
+
+  // Init Highlight.js
+  document.addEventListener('DOMContentLoaded', (event) => {
+    hljs.highlightAll();
+  });
+
+  /* --- SIM 1: TREE OF THOUGHTS --- */
+  function expandTree(level) {
+    if(level === 1) {
+      document.querySelectorAll('.lvl-1').forEach(el => el.style.display = 'flex');
+    }
+  }
+
+  function evaluateNode(el, isGood) {
+    // Reset siblings
+    const siblings = el.parentElement.children;
+    for(let sib of siblings) {
+      sib.classList.remove('selected', 'discarded');
+      sib.classList.add('discarded');
+    }
+    
+    // Select clicked
+    el.classList.remove('discarded');
+    el.classList.add('selected');
+
+    if(isGood) {
+      document.querySelectorAll('.lvl-2').forEach(el => el.style.display = 'flex');
+    } else {
+      document.querySelectorAll('.lvl-2').forEach(el => el.style.display = 'none');
+      document.getElementById('tot-result').innerText = "Dead End. Pruning branch...";
+    }
+  }
+
+  function finishTree(el) {
+    const siblings = el.parentElement.children;
+    for(let sib of siblings) {
+      sib.classList.remove('selected', 'discarded');
+      sib.classList.add('discarded');
+    }
+    el.classList.remove('discarded');
+    el.classList.add('selected');
+    document.getElementById('tot-result').innerText = "Final Selection: " + el.innerText.split(':')[1];
+  }
+
+  /* --- SIM 2: SELF CORRECTION --- */
+  function runCriticSim() {
+    const log = document.getElementById('critic-log');
+    log.innerHTML = "";
+    
+    const steps = [
+      { role: "GENERATOR", badge: "badge-gen", text: "Drafting SQL: SELECT * FROM Users WHERE age > 'twenty';" },
+      { role: "SYSTEM", badge: "badge-critic", text: "ERROR: Syntax error. 'twenty' is a string, column 'age' expects integer." },
+      { role: "CRITIC", badge: "badge-critic", text: "Thought: I need to convert the word 'twenty' to the number 20." },
+      { role: "GENERATOR", badge: "badge-gen", text: "Re-writing SQL: SELECT * FROM Users WHERE age > 20;" },
+      { role: "SYSTEM", badge: "badge-final", text: "SUCCESS: Query executed. Returned 15 rows." }
+    ];
+
+    let delay = 0;
+    steps.forEach(step => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = "log-step";
+        div.innerHTML = `<span class="role-badge ${step.badge}">${step.role}</span> ${step.text}`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+      }, delay);
+      delay += 1200;
+    });
+  }
+
+  // Init
+  updateSlide();
+</script>
+
+</body>
+</html>

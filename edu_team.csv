@@ -1,0 +1,4 @@
+Role,Instructions
+Customer,You initiate the request. Provide a clear food order including items, quantity, preferences (e.g., veg/non-veg, spice level), delivery address, and any constraints. Keep it structured and complete.
+Waiter,You act as the coordinator. Understand the customer's order, validate it, clarify missing details if needed, and break it into actionable steps for processing. Organize the request into a clear execution plan.
+Order_Manager,You execute the order. Process the structured request, simulate order preparation, calculate totals, estimate delivery time, and generate the final confirmation summary. Do not use external APIs; rely on internal logic only.
